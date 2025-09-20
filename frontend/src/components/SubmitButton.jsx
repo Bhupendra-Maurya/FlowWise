@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+import  { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 const submitPipeline = async (nodes, edges) => {
   try {
@@ -39,7 +41,9 @@ const submitPipeline = async (nodes, edges) => {
     return result;
   } catch (error) {
     console.error('Error submitting pipeline:', error);
-    alert(`❌ Failed to submit pipeline!\n\nError: ${error.message}`);
+    toast.error(`❌ Failed to submit pipeline!\n\nError: ${error.message}`, {
+      style: { whiteSpace: 'pre-line' },
+    });
     throw error;
   }
 };
@@ -56,7 +60,7 @@ const showPipelineAlert = (result) => {
 ${dagStatus}
 `.trim();
 
-  alert(message);
+  toast(<div style={{ whiteSpace: 'pre-line' }}>{message}</div>);
 };
 
 export const SubmitButton = ({ nodes = [], edges = [] }) => {

@@ -4,6 +4,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { Header } from "./components/common/Header";
 import { Sidebar } from "./components/common/Sidebar";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -17,7 +18,14 @@ function App() {
 
   return (
     <ReactFlowProvider>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+        }}
+      />
       <div className="h-screen bg-slate-800 flex flex-col overflow-hidden font-['Inter',sans-serif]">
+
         <Header
           sidebarCollapsed={sidebarCollapsed}
           setSidebarCollapsed={setSidebarCollapsed}
@@ -28,7 +36,9 @@ function App() {
           <Sidebar collapsed={sidebarCollapsed} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <WorkflowCanvas onPipelineChange={handlePipelineChange} />
+
           </div>
+
         </div>
       </div>
     </ReactFlowProvider>
