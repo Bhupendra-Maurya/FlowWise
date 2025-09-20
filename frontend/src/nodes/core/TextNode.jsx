@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { BaseNode } from "../base/BaseNode";
 
-const NODE_WIDTH = 400; // match InputNode
+const NODE_WIDTH = 400;
 
 export const TextNode = ({ id, data }) => {
   const [currText, setCurrText] = useState(data?.text || "");
@@ -37,7 +37,7 @@ export const TextNode = ({ id, data }) => {
       hiddenDivRef.current.textContent = currText || " ";
 
       // Approximate inner text width for wrapping:
-      // Base width (400) - outer paddings/borders (~48) = 352
+      // Base width (400) - outer paddings/border
       const textWidthPx = NODE_WIDTH - 48;
       hiddenDivRef.current.style.width = `${textWidthPx}px`;
 
@@ -112,6 +112,7 @@ export const TextNode = ({ id, data }) => {
           backgroundColor: "#1e293b",
           border: "1px solid #334155",
           borderRadius: "12px",
+          padding:"12px"
         }}
       >
         <div
@@ -135,7 +136,7 @@ export const TextNode = ({ id, data }) => {
               height: `${
                 dimensions.height - (detectedVariables.length > 0 ? 85 : 60)
               }px`,
-              padding: "4px 4px",
+              padding: "6px",
               lineHeight: "1.2",
               fontFamily:
                 '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',

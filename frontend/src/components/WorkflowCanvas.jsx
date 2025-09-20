@@ -14,6 +14,7 @@ import { ConditionNode } from "../nodes/new/ConditionNode.jsx";
 import { DatabaseNode } from "../nodes/new/DatabaseNode.jsx";
 import { FileNode } from "../nodes/new/FileNode.jsx";
 import { FunctionNode } from "../nodes/new/FunctionNode.jsx";
+import { DeleteButton } from "../utility/DeleteButton.jsx";
 
 import "reactflow/dist/style.css";
 
@@ -58,12 +59,12 @@ export const WorkflowCanvas = ({ onPipelineChange }) => {
       if (event.key === "Delete") {
         // Only delete if we're not typing in an input field
         const activeElement = document.activeElement;
-        const isTyping = activeElement && (
-          activeElement.tagName === 'INPUT' ||
-          activeElement.tagName === 'TEXTAREA' ||
-          activeElement.tagName === 'SELECT' ||
-          activeElement.isContentEditable
-        );
+        const isTyping =
+          activeElement &&
+          (activeElement.tagName === "INPUT" ||
+            activeElement.tagName === "TEXTAREA" ||
+            activeElement.tagName === "SELECT" ||
+            activeElement.isContentEditable);
 
         // Don't delete nodes if user is typing
         if (!isTyping) {
@@ -142,6 +143,49 @@ export const WorkflowCanvas = ({ onPipelineChange }) => {
   );
 
   const hasSelectedNodes = nodes.some((node) => node.selected);
+  const hasSelectedEdges = edges.some((edge) => edge.selected);
+
+  const deleteSelectedEdges = useCallback(() => {
+    if (!reactFlowInstance) return;
+    const selectedEdges = edges.filter((e) => e.selected);
+    if (selectedEdges.length === 0) return;
+    reactFlowInstance.deleteElements({ edges: selectedEdges });
+  }, [reactFlowInstance, edges]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key !== "Delete") return;
+
+      // Don't delete if user is typing
+      const activeElement = document.activeElement;
+      const isTyping =
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.tagName === "SELECT" ||
+          activeElement.isContentEditable);
+
+      if (isTyping) return;
+
+      // Prefer deleting selected edges first
+      if (edges.some((e) => e.selected)) {
+        event.preventDefault();
+        deleteSelectedEdges();
+        return;
+      }
+
+      // Fallback: delete selected nodes (existing behavior)
+      if (nodes.some((n) => n.selected)) {
+        event.preventDefault();
+        deleteSelectedNodes();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [edges, nodes, deleteSelectedNodes, deleteSelectedEdges]);
 
   return (
     <div className="flex-1 relative bg-slate-800">
@@ -154,9 +198,18 @@ export const WorkflowCanvas = ({ onPipelineChange }) => {
           onClick={() => reactFlowInstance?.fitView()}
           title="Fit View"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+            />
           </svg>
         </button>
 
@@ -167,25 +220,33 @@ export const WorkflowCanvas = ({ onPipelineChange }) => {
           onClick={() => reactFlowInstance?.setCenter(0, 0)}
           title="Center"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+            />
           </svg>
         </button>
 
         {hasSelectedNodes && (
-          <button
+          <DeleteButton
             onClick={deleteSelectedNodes}
-            className="w-12 h-12 bg-red-600 hover:bg-red-700 border border-red-500 
-                     hover:border-red-400 rounded-lg flex items-center justify-center 
-                     text-white transition-all duration-300 shadow-lg"
-            title="Delete Selected"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+            title="Delete Selected Node(s)"
+          />
+        )}
+
+        {hasSelectedEdges && (
+          <DeleteButton
+            onClick={deleteSelectedEdges}
+            title="Delete Selected Edge(s)"
+          />
         )}
       </div>
 
@@ -210,8 +271,10 @@ export const WorkflowCanvas = ({ onPipelineChange }) => {
       {nodes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-700 to-slate-600 
-                          rounded-full flex items-center justify-center border-2 border-slate-600">
+            <div
+              className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-700 to-slate-600 
+                          rounded-full flex items-center justify-center border-2 border-slate-600"
+            >
               <svg
                 className="w-10 h-10 text-cyan-400"
                 fill="none"
